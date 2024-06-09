@@ -1,10 +1,10 @@
 import React, {useState, useEffect, useRef} from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, Image, Alert } from 'react-native';
 import {Camera, CameraType} from 'expo-camera';
 import * as MediaLibrary from 'expo-media-library';
 import Button from './src/components/Button';
-import { CameraOrientation } from 'expo-camera/build/legacy/Camera.types';
+// import { CameraOrientation, CameraType, CameraType } from 'expo-camera/build/legacy/Camera.types';
 
 export default function App() {
   const [hasCameraPermission, setHasCameraPermission] = useState(null);
@@ -25,11 +25,23 @@ useEffect(() => {
 const takePicture = async () => {
   if(cameraRef) {
     try{
-      const datan = await cameraRef.current.takePictureAsync();
+      const data = await cameraRef.current.takePictureAsync();
       console.log(data);
       setImage(data.url);
     } catch(e) {
       console.log(e);
+    }
+  }
+}
+
+const saveImage = async () => {
+  if(image) {
+    try{
+      await MediaLibrary.createAssetAsync(image);
+      alert('Picture saved')
+      setImage(null);
+    } catch(e) {
+      console.log(e)
     }
   }
 }
@@ -40,16 +52,46 @@ if(hasCameraPermission === false ){
 
   return (
     <View style={styles.container}>
+      {!image ? 
       <Camera
       style={styles.camera}
       type={type}
       flashMode={flash}
       ref={cameraRef}
       >
-        <Text>Hello World</Text>
+        <View style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          padding: 30
+        }}>
+          <Button icon={'retweet'} onPress={() => {
+            setType(type === CameraType.back ? CameraType.front : CameraType.back)
+          }}/>
+          <Button icon={'flash'} 
+          color={flash === Camera.Constants.FlashMode.off ? 'gray' : '#f1f1f1'}
+          onPress={() => {
+            setFlash(flash === Camera.Constants.FlashMode.off 
+              ? Camera.Constants.FlashMode.on 
+              : Camera.Constants.FlashMode.off)
+          }}/>
+        </View>
       </Camera>
+      :
+      <Image source={{uri: image}} style={styles.camera}/>
+}
       <View>
+        {image ?
+        <View style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          paddingHorizontal: 50
+        }}>
+          <Button title={"Re-take"} icon={"retweet"} onPress={() => setImage(null)}/>
+          <Button title={"Save"} icon={"check"} onPress={saveImage}/>
+        </View>
+        : 
         <Button title={'Scan object'} icon={"camera"} onPress={takePicture}/>
+        }
       </View>
     </View>
   );
