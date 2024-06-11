@@ -9,13 +9,13 @@ import Button from './src/components/Button';
 export default function App() {
   const [hasCameraPermission, setHasCameraPermission] = useState(null);
   const [image, setImage] = useState(null);
-  const [type, setType] = useState(Camera.Constants.type.back);
+  const [type, setType] = useState(Camera.Constants.Type.back);
   const [flash, setFlash] = useState(Camera.Constants.FlashMode.off);
   const cameraRef = useRef(null);
 
 useEffect(() => {
   (async () => {
-    MediaLibrary.requestPermissionAsync();
+    MediaLibrary.requestPermissionsAsync();
     const cameraStatus = await Camera.requestCameraPermissionsAsync();
     setHasCameraPermission(cameraStatus.status === 'granted');
 
@@ -27,7 +27,7 @@ const takePicture = async () => {
     try{
       const data = await cameraRef.current.takePictureAsync();
       console.log(data);
-      setImage(data.url);
+      setImage(data.uri);
     } catch(e) {
       console.log(e);
     }
@@ -38,7 +38,7 @@ const saveImage = async () => {
   if(image) {
     try{
       await MediaLibrary.createAssetAsync(image);
-      alert('Picture saved')
+      Alert.alert('Picture saved')
       setImage(null);
     } catch(e) {
       console.log(e)
